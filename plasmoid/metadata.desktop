@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=ASUS UX510 Monitor
+Comment=Battery health, CPU temps, fans and sensors for ASUS UX510
+Icon=sensors
+Type=Service
+X-KDE-ServiceTypes=Plasma/Applet
+X-Plasma-API=declarativeappletscript
+X-Plasma-MainScript=ui/main.qml
+X-KDE-PluginInfo-Name=com.asus.batterymonitor
+X-KDE-PluginInfo-Version=1.0
+X-KDE-PluginInfo-Author=fanilo
+X-KDE-PluginInfo-License=MIT
+X-KDE-PluginInfo-Category=System Information
