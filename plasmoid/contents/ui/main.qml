@@ -211,7 +211,7 @@ Item {
             RowLayout {
                 id: row
                 anchors.centerIn: parent
-                spacing: 6
+                spacing: 12
 
                 PlasmaCore.IconItem {
                     source: "computer"
