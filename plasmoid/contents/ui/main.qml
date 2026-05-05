@@ -239,7 +239,7 @@ Item {
                     spacing: 4
                     Text { text: "💾"; font.pixelSize: 10; verticalAlignment: Text.AlignVCenter }
                     PlasmaComponents.Label {
-                        text: (root.ramUsed !== "—" ? Math.round(parseInt(root.ramUsed) / 1024) : "—") + "Go"
+                        text: ramGb(root.ramUsed) + "Go"
                         font.pixelSize: 12; font.bold: true
                         color: ramColor(root.ramUsed, root.ramTotal)
                     }
