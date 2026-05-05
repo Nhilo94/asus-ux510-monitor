@@ -249,7 +249,7 @@ Item {
                     spacing: 4
                     Text { text: "⚡"; font.pixelSize: 10; verticalAlignment: Text.AlignVCenter }
                     PlasmaComponents.Label {
-                        text: (root.cpuFreq !== "—" ? Math.round(parseFloat(root.cpuFreq)) : "—") + "Ghz"
+                        text: root.cpuFreq + "Ghz"
                         font.pixelSize: 12; font.bold: true
                         color: "#60a5fa"
                     }
