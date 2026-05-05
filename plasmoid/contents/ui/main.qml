@@ -237,7 +237,7 @@ Item {
 
                 RowLayout {
                     spacing: 4
-                    Text { text: "💾"; font.pixelSize: units.iconSizes.small; font.bold: true; verticalAlignment: Text.AlignVCenter; color: ramColor(root.ramUsed, root.ramTotal) }
+                    Text { text: "▤"; font.pixelSize: units.iconSizes.small; font.bold: true; verticalAlignment: Text.AlignVCenter; color: ramColor(root.ramUsed, root.ramTotal) }
                     PlasmaComponents.Label {
                         text: ramGb(root.ramUsed) + "Go"
                         font.pixelSize: 12; font.bold: true
@@ -360,7 +360,7 @@ Item {
 
         // ── RAM ──
         Rectangle { Layout.fillWidth: true; height: 1; color: PlasmaCore.Theme.textColor; opacity: 0.15 }
-        PlasmaComponents.Label { text: "💾  Mémoire RAM"; font.pixelSize: 13; font.bold: true; Layout.leftMargin: 8 }
+        PlasmaComponents.Label { text: "▤  Mémoire RAM"; font.pixelSize: 13; font.bold: true; Layout.leftMargin: 8 }
         GridLayout {
             Layout.fillWidth: true; Layout.leftMargin: 12; Layout.rightMargin: 12
             columns: 2; rowSpacing: 3; columnSpacing: 8
