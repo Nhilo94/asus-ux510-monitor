@@ -219,14 +219,10 @@ Item {
                     implicitHeight: units.iconSizes.small
                 }
 
-                RowLayout {
-                    spacing: 1
-                    Text { text: "🌡"; font.pixelSize: 10; verticalAlignment: Text.AlignVCenter }
-                    PlasmaComponents.Label {
-                        text: root.cpuPackageTemp + "°"
-                        font.pixelSize: 12; font.bold: true
-                        color: panelIconColor()
-                    }
+                PlasmaComponents.Label {
+                    text: root.cpuPackageTemp + "°"
+                    font.pixelSize: 12; font.bold: true
+                    color: panelIconColor()
                 }
 
                 RowLayout {
