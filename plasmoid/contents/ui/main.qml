@@ -227,7 +227,7 @@ Item {
 
                 RowLayout {
                     spacing: 4
-                    Text { text: "CPU"; font.pixelSize: 10; font.bold: true; verticalAlignment: Text.AlignVCenter; color: cpuLoadColor(root.cpuLoad) }
+                    Text { text: "CPU"; font.pixelSize: 9; font.bold: true; verticalAlignment: Text.AlignVCenter; color: cpuLoadColor(root.cpuLoad) }
                     PlasmaComponents.Label {
                         text: root.cpuLoad + "%"
                         font.pixelSize: 12; font.bold: true
@@ -237,7 +237,7 @@ Item {
 
                 RowLayout {
                     spacing: 4
-                    Text { text: "RAM"; font.pixelSize: 10; font.bold: true; verticalAlignment: Text.AlignVCenter; color: ramColor(root.ramUsed, root.ramTotal) }
+                    Text { text: "RAM"; font.pixelSize: 9; font.bold: true; verticalAlignment: Text.AlignVCenter; color: ramColor(root.ramUsed, root.ramTotal) }
                     PlasmaComponents.Label {
                         text: ramGb(root.ramUsed) + "Go"
                         font.pixelSize: 12; font.bold: true
@@ -247,7 +247,7 @@ Item {
 
                 RowLayout {
                     spacing: 4
-                    Text { text: "FREQ"; font.pixelSize: 10; font.bold: true; verticalAlignment: Text.AlignVCenter; color: "#60a5fa" }
+                    Text { text: "FREQ"; font.pixelSize: 9; font.bold: true; verticalAlignment: Text.AlignVCenter; color: "#60a5fa" }
                     PlasmaComponents.Label {
                         text: root.cpuFreq + "Ghz"
                         font.pixelSize: 12; font.bold: true
