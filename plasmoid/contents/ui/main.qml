@@ -30,6 +30,12 @@ Item {
     property string pchTemp: "—"
     property string wifiTemp: "—"
 
+    // System
+    property string cpuLoad: "—"
+    property string ramUsed: "—"
+    property string ramTotal: "—"
+    property string cpuFreq: "—"
+
     // Panel: compact icon, click opens popup
     // Desktop: full widget shown directly
     Plasmoid.preferredRepresentation: plasmoid.formFactor === PlasmaCore.Types.Planar
@@ -49,6 +55,9 @@ Item {
             "echo EDESIGN=$(cat /sys/class/power_supply/BAT0/energy_full_design 2>/dev/null || echo 0);" +
             "echo STATUS=$(cat /sys/class/power_supply/BAT0/status 2>/dev/null || echo Unknown);" +
             "echo VOLTAGE=$(cat /sys/class/power_supply/BAT0/voltage_now 2>/dev/null || echo 0);" +
+            "echo CPULOAD=$(vmstat 1 2 | tail -1 | awk \"{print 100-\\$15}\");" +
+            "free -m | awk \"/^Mem:/{print \\\"RAMUSED=\\\" \\$3; print \\\"RAMTOTAL=\\\" \\$2}\";" +
+            "echo CPUFREQ=$(grep \"cpu MHz\" /proc/cpuinfo | awk \"{sum+=\\$4; count++} END{printf \\\"%.1f\\\", sum/count/1000}\");" +
             "for h in /sys/class/hwmon/hwmon*; do " +
             "  n=$(cat $h/name 2>/dev/null); " +
             "  if [ \"$n\" = asus ] && [ -f $h/fan1_input ]; then echo FAN1=$(cat $h/fan1_input); fi; " +
@@ -76,6 +85,10 @@ Item {
                 else if (key === "EDESIGN") { energyFullDesign = val; updateHealth(); }
                 else if (key === "STATUS") batteryStatus = val;
                 else if (key === "VOLTAGE") batteryVoltage = (parseInt(val) / 1e6).toFixed(2);
+                else if (key === "CPULOAD") cpuLoad = val;
+                else if (key === "RAMUSED") ramUsed = val;
+                else if (key === "RAMTOTAL") ramTotal = val;
+                else if (key === "CPUFREQ") cpuFreq = val;
                 else if (key === "CPUPKG") cpuPackageTemp = (parseInt(val) / 1000).toFixed(0);
                 else if (key === "CORE0") cpuCore0Temp = (parseInt(val) / 1000).toFixed(0);
                 else if (key === "CORE1") cpuCore1Temp = (parseInt(val) / 1000).toFixed(0);
@@ -99,6 +112,22 @@ Item {
         if (v >= 90) return "#ef4444";
         if (v >= 80) return "#f97316";
         if (v >= 60) return "#fbbf24";
+        return "#4ade80";
+    }
+    function cpuLoadColor(l) {
+        var v = parseInt(l); if (isNaN(v)) return PlasmaCore.Theme.textColor;
+        if (v >= 90) return "#ef4444";
+        if (v >= 70) return "#f97316";
+        if (v >= 50) return "#fbbf24";
+        return "#4ade80";
+    }
+    function ramColor(used, total) {
+        var u = parseInt(used); var t = parseInt(total);
+        if (isNaN(u) || isNaN(t) || t === 0) return PlasmaCore.Theme.textColor;
+        var pct = u * 100 / t;
+        if (pct >= 90) return "#ef4444";
+        if (pct >= 75) return "#f97316";
+        if (pct >= 50) return "#fbbf24";
         return "#4ade80";
     }
     function pchTempColor(t) {
@@ -144,7 +173,6 @@ Item {
         if (v >= 60) return "  ⚠ WARM";
         return "  ✅ OK";
     }
-    // Icon color matches worst CPU temp
     function panelIconColor() {
         var v = parseInt(cpuPackageTemp);
         if (isNaN(v)) return PlasmaCore.Theme.textColor;
@@ -152,6 +180,15 @@ Item {
         if (v >= 80) return "#f97316";
         if (v >= 60) return "#fbbf24";
         return "#4ade80";
+    }
+    function ramGb(mb) {
+        var v = parseInt(mb);
+        return isNaN(v) ? "—" : (v / 1024).toFixed(1);
+    }
+    function ramPct() {
+        var u = parseInt(ramUsed); var t = parseInt(ramTotal);
+        if (isNaN(u) || isNaN(t) || t === 0) return "—";
+        return (u * 100 / t).toFixed(0);
     }
 
     Timer {
@@ -174,28 +211,63 @@ Item {
             RowLayout {
                 id: row
                 anchors.centerIn: parent
-                spacing: 4
+                spacing: 6
 
                 PlasmaCore.IconItem {
                     source: "computer"
                     implicitWidth: units.iconSizes.small
                     implicitHeight: units.iconSizes.small
                 }
-                PlasmaComponents.Label {
-                    text: root.cpuPackageTemp + "°"
-                    font.pixelSize: 12
-                    font.bold: true
-                    color: panelIconColor()
+
+                RowLayout {
+                    spacing: 1
+                    Text { text: "🌡"; font.pixelSize: 10; verticalAlignment: Text.AlignVCenter }
+                    PlasmaComponents.Label {
+                        text: root.cpuPackageTemp + "°"
+                        font.pixelSize: 12; font.bold: true
+                        color: panelIconColor()
+                    }
+                }
+
+                RowLayout {
+                    spacing: 1
+                    Text { text: "⚙"; font.pixelSize: 10; verticalAlignment: Text.AlignVCenter }
+                    PlasmaComponents.Label {
+                        text: root.cpuLoad + "%"
+                        font.pixelSize: 12; font.bold: true
+                        color: cpuLoadColor(root.cpuLoad)
+                    }
+                }
+
+                RowLayout {
+                    spacing: 1
+                    Text { text: "💾"; font.pixelSize: 10; verticalAlignment: Text.AlignVCenter }
+                    PlasmaComponents.Label {
+                        text: ramGb(root.ramUsed) + "G"
+                        font.pixelSize: 12; font.bold: true
+                        color: ramColor(root.ramUsed, root.ramTotal)
+                    }
+                }
+
+                RowLayout {
+                    spacing: 1
+                    Text { text: "⚡"; font.pixelSize: 10; verticalAlignment: Text.AlignVCenter }
+                    PlasmaComponents.Label {
+                        text: root.cpuFreq + "G"
+                        font.pixelSize: 12; font.bold: true
+                        color: "#60a5fa"
+                    }
                 }
             }
         }
 
         PlasmaCore.ToolTipArea {
             anchors.fill: parent
-            mainText: "ASUS UX510 Monitor"
-            subText: "CPU: " + root.cpuPackageTemp + "°C | Fan: " + root.fan1Rpm + " RPM\n" +
-                     "Battery: " + root.capacity + "% (" + root.batteryStatus + ")\n" +
-                     "Health: " + root.healthPercent + "%"
+            mainText: "PC Monitor"
+            subText: "CPU: " + root.cpuPackageTemp + "°C | Load: " + root.cpuLoad + "% | Fréq: " + root.cpuFreq + " GHz\n" +
+                     "RAM: " + ramGb(root.ramUsed) + " / " + ramGb(root.ramTotal) + " Go (" + ramPct() + "%)\n" +
+                     "Fan: " + root.fan1Rpm + " RPM | Batterie: " + root.capacity + "% (" + root.batteryStatus + ")\n" +
+                     "Santé: " + root.healthPercent + "%"
         }
     }
 
@@ -209,7 +281,7 @@ Item {
         // Header
         PlasmaComponents.Label {
             Layout.fillWidth: true
-            text: statusIcon() + "  ASUS UX510 Monitor"
+            text: statusIcon() + "  PC Monitor"
             font.pixelSize: 15; font.bold: true
             horizontalAlignment: Text.AlignHCenter
         }
@@ -271,6 +343,51 @@ Item {
 
             PlasmaComponents.Label { text: "Core 1"; opacity: 0.6; font.pixelSize: 12 }
             PlasmaComponents.Label { text: root.cpuCore1Temp + "°C" + tempLevel(root.cpuCore1Temp); font.bold: true; font.pixelSize: 12; color: cpuTempColor(root.cpuCore1Temp) }
+
+            PlasmaComponents.Label { text: "Charge"; opacity: 0.6; font.pixelSize: 12 }
+            PlasmaComponents.Label { text: root.cpuLoad + "%"; font.bold: true; font.pixelSize: 12; color: cpuLoadColor(root.cpuLoad) }
+
+            PlasmaComponents.Label { text: "Fréquence"; opacity: 0.6; font.pixelSize: 12 }
+            PlasmaComponents.Label { text: root.cpuFreq + " GHz"; font.bold: true; font.pixelSize: 12; color: "#60a5fa" }
+        }
+        // CPU load bar
+        Item {
+            Layout.fillWidth: true; Layout.preferredHeight: 16; Layout.leftMargin: 12; Layout.rightMargin: 12
+            Rectangle { anchors.fill: parent; radius: 3; color: PlasmaCore.Theme.textColor; opacity: 0.08 }
+            Rectangle {
+                width: parent.width * Math.min(parseInt(root.cpuLoad) || 0, 100) / 100
+                height: parent.height; radius: 3; color: cpuLoadColor(root.cpuLoad); opacity: 0.7
+                Behavior on width { NumberAnimation { duration: 400 } }
+            }
+            PlasmaComponents.Label { anchors.centerIn: parent; text: "CPU: " + root.cpuLoad + "%"; font.pixelSize: 10; font.bold: true }
+        }
+
+        // ── RAM ──
+        Rectangle { Layout.fillWidth: true; height: 1; color: PlasmaCore.Theme.textColor; opacity: 0.15 }
+        PlasmaComponents.Label { text: "💾  Mémoire RAM"; font.pixelSize: 13; font.bold: true; Layout.leftMargin: 8 }
+        GridLayout {
+            Layout.fillWidth: true; Layout.leftMargin: 12; Layout.rightMargin: 12
+            columns: 2; rowSpacing: 3; columnSpacing: 8
+
+            PlasmaComponents.Label { text: "Utilisée"; opacity: 0.6; font.pixelSize: 12 }
+            PlasmaComponents.Label {
+                text: ramGb(root.ramUsed) + " / " + ramGb(root.ramTotal) + " Go"
+                font.bold: true; font.pixelSize: 12; color: ramColor(root.ramUsed, root.ramTotal)
+            }
+        }
+        // RAM bar
+        Item {
+            Layout.fillWidth: true; Layout.preferredHeight: 16; Layout.leftMargin: 12; Layout.rightMargin: 12
+            Rectangle { anchors.fill: parent; radius: 3; color: PlasmaCore.Theme.textColor; opacity: 0.08 }
+            Rectangle {
+                width: {
+                    var u = parseInt(root.ramUsed); var t = parseInt(root.ramTotal);
+                    return (isNaN(u) || isNaN(t) || t === 0) ? 0 : parent.width * Math.min(u, t) / t;
+                }
+                height: parent.height; radius: 3; color: ramColor(root.ramUsed, root.ramTotal); opacity: 0.7
+                Behavior on width { NumberAnimation { duration: 400 } }
+            }
+            PlasmaComponents.Label { anchors.centerIn: parent; text: "RAM: " + ramPct() + "%"; font.pixelSize: 10; font.bold: true }
         }
 
         // ── FANS ──

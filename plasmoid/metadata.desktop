@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=ASUS UX510 Monitor
-Comment=Battery health, CPU temps, fans and sensors for ASUS UX510
+Name=PC Monitor
+Comment=Battery health, CPU temps, fans, RAM and sensors monitor
 Icon=sensors
 Type=Service
 X-KDE-ServiceTypes=Plasma/Applet
