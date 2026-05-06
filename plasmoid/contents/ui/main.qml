@@ -195,7 +195,7 @@ Item {
     Plasmoid.compactRepresentation: Item {
         Layout.minimumWidth:  compactRow.implicitWidth + 6
         Layout.preferredWidth: compactRow.implicitWidth + 6
-        Layout.minimumHeight: units.iconSizes.small
+        Layout.minimumHeight: 22
 
         MouseArea {
             anchors.fill: parent
@@ -209,8 +209,8 @@ Item {
 
                 PlasmaCore.IconItem {
                     source: "computer"
-                    implicitWidth: units.iconSizes.small
-                    implicitHeight: units.iconSizes.small
+                    implicitWidth: 16
+                    implicitHeight: 16
                 }
 
                 PlasmaComponents.Label {
