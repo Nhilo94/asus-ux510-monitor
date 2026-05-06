@@ -1,0 +1,20 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "fanilorakoto.94@gmail.com",
+                "Name": "Fanilo Rakotovao"
+            }
+        ],
+        "BugReportUrl": "https://github.com/Nhilo94/asus-ux510-monitor/issues",
+        "Category": "System Information",
+        "Description": "Monitors CPU temps, RAM, fans, battery health and more. Auto-detects sensors (coretemp, k10temp, amdgpu, iwlwifi, nvme…) to support a wide range of Linux laptops and desktops.",
+        "Icon": "utilities-system-monitor",
+        "Id": "com.github.nhilo94.pcmonitor",
+        "License": "MIT",
+        "Name": "PC Monitor",
+        "Version": "1.1.0",
+        "Website": "https://github.com/Nhilo94/asus-ux510-monitor"
+    },
+    "X-Plasma-API-Minimum-Version": "2.0"
+}
