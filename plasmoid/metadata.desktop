@@ -8,7 +8,7 @@ X-Plasma-API=declarativeappletscript
 X-Plasma-MainScript=ui/main.qml
 
 X-KDE-PluginInfo-Name=com.github.nhilo94.pcmonitor
-X-KDE-PluginInfo-Version=1.1.0
+X-KDE-PluginInfo-Version=1.1.8
 X-KDE-PluginInfo-Author=Fanilo Rakotovao
 X-KDE-PluginInfo-Email=fanilorakoto.94@gmail.com
 X-KDE-PluginInfo-License=MIT

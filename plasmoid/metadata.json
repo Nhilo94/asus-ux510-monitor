@@ -13,8 +13,12 @@
         "Id": "com.github.nhilo94.pcmonitor",
         "License": "MIT",
         "Name": "PC Monitor",
-        "Version": "1.1.0",
+        "ServiceTypes": [
+            "Plasma/Applet"
+        ],
+        "Version": "1.1.8",
         "Website": "https://github.com/Nhilo94/asus-ux510-monitor"
     },
-    "X-Plasma-API-Minimum-Version": "2.0"
+    "X-Plasma-API": "declarativeappletscript",
+    "X-Plasma-MainScript": "ui/main.qml"
 }
