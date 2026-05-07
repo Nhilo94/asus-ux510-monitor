@@ -31,9 +31,16 @@ Item {
     // ── Script path ───────────────────────────────────────────────────────
     property string scriptPath: Qt.resolvedUrl("../code/monitor.sh").toString().replace("file://", "")
 
-    Plasmoid.preferredRepresentation: plasmoid.formFactor === PlasmaCore.Types.Planar
-        ? Plasmoid.fullRepresentation
-        : Plasmoid.compactRepresentation
+    // NOTE: Do NOT set Plasmoid.preferredRepresentation explicitly here.
+    // Letting Plasma decide (full on desktop, compact on panel) is what
+    // makes the widget actually get a geometry on the Folder View desktop:
+    // BasicAppletContainer's Layout sizing only forwards correctly when
+    // `applet.preferredRepresentation !== applet.fullRepresentation`
+    // (it then reads `compactRepresentationItem.Layout.*` and the C++
+    // AppletQuickItem code routes the active full representation's size
+    // properly). Forcing preferredRepresentation === fullRepresentation
+    // makes the container fall back to `applet.Layout.*` on the bare root
+    // Item, which is unset, so the widget is created at 0×0 and invisible.
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground
 
     // ── Data source ───────────────────────────────────────────────────────
@@ -193,6 +200,7 @@ Item {
     // COMPACT — panel icon, click opens popup
     // ══════════════════════════════════════════════════════════════════════
     Plasmoid.compactRepresentation: Item {
+        id: compactRoot
         Layout.minimumWidth:  compactRow.implicitWidth + 6
         Layout.preferredWidth: compactRow.implicitWidth + 6
         Layout.minimumHeight: 22
@@ -221,19 +229,21 @@ Item {
 
                 RowLayout {
                     spacing: 4
-                    Text { text: "CPU"; font.pixelSize: 9; font.bold: true; verticalAlignment: Text.AlignVCenter; color: cpuLoadColor(root.cpuLoad) }
-                    PlasmaComponents.Label { text: root.cpuLoad + "%"; font.pixelSize: 12; font.bold: true; color: cpuLoadColor(root.cpuLoad) }
+                    readonly property color c: cpuLoadColor(root.cpuLoad)
+                    PlasmaComponents.Label { text: "CPU"; font.pixelSize: 9; font.bold: true; color: parent.c }
+                    PlasmaComponents.Label { text: root.cpuLoad + "%"; font.pixelSize: 12; font.bold: true; color: parent.c }
                 }
 
                 RowLayout {
                     spacing: 4
-                    Text { text: "RAM"; font.pixelSize: 9; font.bold: true; verticalAlignment: Text.AlignVCenter; color: ramColor(root.ramUsed, root.ramTotal) }
-                    PlasmaComponents.Label { text: ramGb(root.ramUsed) + "G"; font.pixelSize: 12; font.bold: true; color: ramColor(root.ramUsed, root.ramTotal) }
+                    readonly property color c: ramColor(root.ramUsed, root.ramTotal)
+                    PlasmaComponents.Label { text: "RAM"; font.pixelSize: 9; font.bold: true; color: parent.c }
+                    PlasmaComponents.Label { text: ramGb(root.ramUsed) + "G"; font.pixelSize: 12; font.bold: true; color: parent.c }
                 }
 
                 RowLayout {
                     spacing: 4
-                    Text { text: "FREQ"; font.pixelSize: 9; font.bold: true; verticalAlignment: Text.AlignVCenter; color: "#60a5fa" }
+                    PlasmaComponents.Label { text: "FREQ"; font.pixelSize: 9; font.bold: true; color: "#60a5fa" }
                     PlasmaComponents.Label { text: root.cpuFreq + "G"; font.pixelSize: 12; font.bold: true; color: "#60a5fa" }
                 }
             }
@@ -253,8 +263,18 @@ Item {
     // FULL — popup or desktop widget
     // ══════════════════════════════════════════════════════════════════════
     Plasmoid.fullRepresentation: ColumnLayout {
-        Layout.preferredWidth: 300
-        Layout.minimumWidth:   280
+        id: fullRepRoot
+
+        // Size hints used by both the panel popup and the desktop container.
+        // We bind preferred sizes to the natural implicit sizes of the
+        // ColumnLayout so the widget follows its real content (which grows
+        // when battery/GPU/fan sections become visible). Adding +16 on the
+        // height adds a small bottom padding so the legend isn't glued to
+        // the edge of the panel background.
+        Layout.minimumWidth:    280
+        Layout.minimumHeight:   implicitHeight
+        Layout.preferredWidth:  Math.max(implicitWidth + 24, 300)
+        Layout.preferredHeight: implicitHeight + 16
         spacing: 5
 
         // ── Header ──────────────────────────────────────────────────────
@@ -443,7 +463,5 @@ Item {
             PlasmaComponents.Label { text: "🔥 High";   font.pixelSize: 10; color: "#f97316" }
             PlasmaComponents.Label { text: "⛔ Danger"; font.pixelSize: 10; color: "#ef4444" }
         }
-
-        Item { Layout.fillHeight: true }
-    }
+    } // end Plasmoid.fullRepresentation ColumnLayout
 }
