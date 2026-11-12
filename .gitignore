@@ -4,3 +4,7 @@
 .directory
 .playwright-mcp/
 .claude/
+
+# Build artifacts
+.build/
+*.plasmoid
