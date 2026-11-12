@@ -13,7 +13,7 @@ laptops and desktops — not just the ASUS UX510UWK it was originally written fo
 | **Battery** | Cycles, capacity %, health %, energy (Wh), voltage, charge status — hidden on desktops |
 | **CPU** | Per-core and package temps (`coretemp`, `k10temp`, `zenpower`, `k8temp`), load %, frequency |
 | **GPU** | GPU temps (`amdgpu`, `radeon`, `nouveau`, `nvidia`) — hidden if absent |
-| **RAM** | Used / total with usage bar |
+| **RAM** | Used / total with usage bar, plus swap used / total — the swap row is hidden on systems without swap |
 | **Fans** | Every `fan*_input` exposed by any hwmon node — hidden if absent |
 | **Other** | ACPI chassis, PCH chipset, WiFi adapter, NVMe temps |
 
@@ -83,9 +83,30 @@ asus-ux510-monitor/
 │   ├── metadata.json
 │   └── contents/ui/main.qml
 ├── install.sh                   # Detects Plasma version, installs + builds both archives
+├── test/plasma6/                # Checks the Plasma 6 package from a Plasma 5 machine
 ├── LICENSE
 └── README.md
 ```
+
+### Testing the Plasma 6 package
+
+The dev machine runs Plasma 5, so the Plasma 6 QML can never be loaded locally —
+KF6 and `org.kde.plasma.plasma5support` are not installed. [test/plasma6/check.sh](test/plasma6/check.sh)
+closes that gap with a throwaway container running real Plasma 6:
+
+```bash
+bash test/plasma6/check.sh
+```
+
+It verifies that `kpackagetool6` accepts the package, and that `qmllint` resolves
+every import and type under Qt6/KF6 — which is where a Plasma 6 plasmoid actually
+breaks. Running the same check on the Plasma 5 file reports 11 `unresolved-type`
+and 11 `missing-property` findings, so the check genuinely discriminates.
+
+It does **not** verify rendering: under software rendering in a container,
+`plasmoidviewer` draws nothing — a stock applet comes out just as blank, so a
+blank window proves nothing either way. Visual confirmation still needs a real
+Plasma 6 session.
 
 ### Why two packages?
 

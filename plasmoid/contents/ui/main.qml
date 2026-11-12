@@ -19,6 +19,8 @@ Item {
     property string cpuLoad:           "—"
     property string ramUsed:           "—"
     property string ramTotal:          "—"
+    property string swapUsed:          "0"
+    property string swapTotal:         "0"   // stays 0 on systems without swap
     property string cpuFreq:           "—"
     property string cpuPkgTemp:        "—"   // best CPU temp for compact view
 
@@ -53,6 +55,8 @@ Item {
             var lines = data.stdout.split("\n")
             var newCpu = [], newGpu = [], newFans = [], newOther = []
             var tempBat = false
+            // Reset per poll: swap can be turned off while the widget runs.
+            var tempSwapUsed = "0", tempSwapTotal = "0"
 
             for (var i = 0; i < lines.length; i++) {
                 var eq = lines[i].indexOf("=")
@@ -70,6 +74,8 @@ Item {
                 else if (k === "CPULOAD")  { cpuLoad = v }
                 else if (k === "RAMUSED")  { ramUsed = v }
                 else if (k === "RAMTOTAL") { ramTotal = v }
+                else if (k === "SWAPUSED")  { tempSwapUsed = v }
+                else if (k === "SWAPTOTAL") { tempSwapTotal = v }
                 else if (k === "CPUFREQ")  { cpuFreq = v }
                 else if (k.indexOf("CPUTEMP_") === 0) {
                     var cpuLbl = k.substring(8).replace(/_/g, " ")
@@ -94,6 +100,8 @@ Item {
             }
 
             hasBattery = tempBat
+            swapUsed   = tempSwapUsed
+            swapTotal  = tempSwapTotal
 
             // Pick the most representative CPU temp for the compact view
             if (newCpu.length > 0) {
@@ -155,6 +163,15 @@ Item {
         if (pct >= 90) return "#ef4444"; if (pct >= 75) return "#f97316"
         if (pct >= 50) return "#fbbf24"; return "#4ade80"
     }
+    // Swap thresholds are stricter than RAM: sustained swap use already means
+    // the machine is under memory pressure, so it turns amber earlier.
+    function swapColor(used, total) {
+        var u = parseInt(used); var t = parseInt(total)
+        if (isNaN(u) || isNaN(t) || t === 0) return PlasmaCore.Theme.textColor
+        var pct = u * 100 / t
+        if (pct >= 80) return "#ef4444"; if (pct >= 50) return "#f97316"
+        if (pct >= 20) return "#fbbf24"; return "#4ade80"
+    }
     function fanRpmColor(r) {
         var v = parseInt(r); if (isNaN(v)) return PlasmaCore.Theme.textColor
         if (v >= 4000) return "#f97316"; if (v >= 2000) return "#4ade80"
@@ -186,6 +203,11 @@ Item {
     }
     function ramPct() {
         var u = parseInt(ramUsed); var t = parseInt(ramTotal)
+        if (isNaN(u) || isNaN(t) || t === 0) return "—"
+        return (u * 100 / t).toFixed(0)
+    }
+    function swapPct() {
+        var u = parseInt(swapUsed); var t = parseInt(swapTotal)
         if (isNaN(u) || isNaN(t) || t === 0) return "—"
         return (u * 100 / t).toFixed(0)
     }
@@ -414,6 +436,36 @@ Item {
                 Behavior on width { NumberAnimation { duration: 400 } }
             }
             PlasmaComponents.Label { anchors.centerIn: parent; text: "RAM: " + ramPct() + "%"; font.pixelSize: 10; font.bold: true }
+        }
+
+        // ── SWAP (hidden on systems without swap) ────────────────────────
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 3
+            visible: parseInt(root.swapTotal) > 0
+
+            RowLayout {
+                Layout.fillWidth: true; Layout.leftMargin: 12; Layout.rightMargin: 12
+                PlasmaComponents.Label { text: "Swap"; opacity: 0.6; font.pixelSize: 12; Layout.fillWidth: true }
+                PlasmaComponents.Label {
+                    text: ramGb(root.swapUsed) + " / " + ramGb(root.swapTotal) + " GB"
+                    font.bold: true; font.pixelSize: 12; color: swapColor(root.swapUsed, root.swapTotal)
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true; Layout.preferredHeight: 16; Layout.leftMargin: 12; Layout.rightMargin: 12
+                Rectangle { anchors.fill: parent; radius: 3; color: PlasmaCore.Theme.textColor; opacity: 0.08 }
+                Rectangle {
+                    width: {
+                        var u = parseInt(root.swapUsed); var t = parseInt(root.swapTotal)
+                        return (isNaN(u) || isNaN(t) || t === 0) ? 0 : parent.width * Math.min(u, t) / t
+                    }
+                    height: parent.height; radius: 3; color: swapColor(root.swapUsed, root.swapTotal); opacity: 0.7
+                    Behavior on width { NumberAnimation { duration: 400 } }
+                }
+                PlasmaComponents.Label { anchors.centerIn: parent; text: "Swap: " + swapPct() + "%"; font.pixelSize: 10; font.bold: true }
+            }
         }
 
         // ── FANS (hidden if no fan sensors found) ────────────────────────

@@ -26,7 +26,10 @@ if [ -n "$BAT_PATH" ]; then
 fi
 
 # ── SYSTEM ─────────────────────────────────────────────────────────────────
-free -m | awk '/^Mem:/{print "RAMUSED=" $3; print "RAMTOTAL=" $2}'
+# Swap lines are absent on systems without swap, so SWAPTOTAL simply never
+# gets emitted there and the QML keeps the swap row hidden.
+free -m | awk '/^Mem:/{print "RAMUSED=" $3; print "RAMTOTAL=" $2}
+               /^Swap:/{print "SWAPUSED=" $3; print "SWAPTOTAL=" $2}'
 awk '/^cpu MHz/{s+=$4;c++} END{printf "CPUFREQ=%.1f\n",s/c/1000}' /proc/cpuinfo
 
 # ── HWMON auto-discovery ───────────────────────────────────────────────────
